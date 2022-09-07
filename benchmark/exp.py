@@ -51,16 +51,18 @@ for benchmark_data in benchmark_generator:
     # Get columns info
     columns = list(train_data.columns)[:-1]
     columns_prefix = [col.split('_')[0] for col in columns]
+    columns_prefix_int = [int(c) for c in columns_prefix]
     cat_feats = benchmark_data['cat_feats']
-    count_cat_prefix = [columns_prefix.count(cat) for cat in cat_feats]
+    cat_feats_int = [int(c) for c in cat_feats]
+    count_cat_prefix = [columns_prefix_int.count(cat) for cat in cat_feats_int]
 
     # https://github.com/SeldonIO/alibi/issues/366 => Remove binary features (treat as numerical)
     # since it is not supported
     # Get OHE parameters
     cat_vars = {}
-    for cat_prefix, cat_count in zip(cat_feats, count_cat_prefix):
+    for cat_prefix, cat_count in zip(cat_feats_int, count_cat_prefix):
         if cat_count > 1:
-            cat_vars[columns_prefix.index(cat_prefix)] = cat_count
+            cat_vars[columns_prefix_int.index(cat_prefix)] = cat_count
 
     # Get feature ranges
     feat_range_down = [-1 if c in cat_feats else train_data.loc[:, c].min() for c in non_ohe_columns]
