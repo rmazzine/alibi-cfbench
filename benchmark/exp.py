@@ -114,10 +114,19 @@ for benchmark_data in benchmark_generator:
             cf_generation_time = time.time() - start_generation_time
 
             # Get first CF
-            cf = explanation.cf['X'][0].tolist()
-            if cf is None:
+            if explanation.cf is not None:
+                cf = explanation.cf['X'][0].tolist()
+                if cf is None:
+                    cf = factual_row.to_list()
+            else:
                 cf = factual_row.to_list()
-        except:
+
+            if factual_row.to_list() != cf:
+                print(f'CF candidate generated {cf_generator_name}')
+            else:
+                print(f'No CF generated {cf_generator_name}')
+        except Exception as e:
+            print(f'Error generating CF {cf_generator_name}: {e}')
             # In case the CF generation fails, return same as factual
             cf = factual_row.to_list()
             cf_generation_time = np.NaN
@@ -132,6 +141,7 @@ for benchmark_data in benchmark_generator:
     try:
         generate_cf(cf_generator, 'alibi')
     except TimeoutError:
+        print('Timeout generating CF alibi')
         # If CF generation time exceeded the limit
         evaluator(
             cf_out=factual_row.to_list(),
@@ -142,6 +152,7 @@ for benchmark_data in benchmark_generator:
     try:
         generate_cf(cf_nograd_generator, 'alibi_nograd')
     except TimeoutError:
+        print('Timeout generating CF alibi_nograd')
         # If CF generation time exceeded the limit
         evaluator(
             cf_out=factual_row.to_list(),
